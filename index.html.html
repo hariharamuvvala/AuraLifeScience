@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Medical inquiry workbench (prototype)</title>
+<style>
+:root{--bg:#eef2f5;--sf:#fff;--ink:#14202b;--mut:#566573;--ln:#d5dde4;--pri:#0e5a78;--onp:#fff;--pb:#dcecf3;--ok:#19694a;--ob:#dff2e8;--wn:#8a5300;--wb:#fbefd5;--st:#a3231a;--sb:#fbe3e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f171e;--sf:#17222b;--ink:#e6edf2;--mut:#9fb0bd;--ln:#2a3946;--pri:#6cc3e0;--onp:#0f171e;--pb:#17323f;--ok:#6fd6a3;--ob:#15352a;--wn:#f0b955;--wb:#3a2e14;--st:#ff948b;--sb:#3d1a18}}
+:root[data-theme="dark"]{--bg:#0f171e;--sf:#17222b;--ink:#e6edf2;--mut:#9fb0bd;--ln:#2a3946;--pri:#6cc3e0;--onp:#0f171e;--pb:#17323f;--ok:#6fd6a3;--ob:#15352a;--wn:#f0b955;--wb:#3a2e14;--st:#ff948b;--sb:#3d1a18}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--ln);background:var(--sf)}
+h1{font-size:18px;margin:0 8px 0 0}h2{font-size:17px;margin:0 0 2px}h3{font-size:15px;margin:14px 0 2px}
+main{display:grid;grid-template-columns:270px minmax(0,1fr) 360px;gap:16px;padding:16px 20px;align-items:start}
+@media(max-width:1000px){main{grid-template-columns:1fr}}
+.pn{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:14px}
+.cap,.mut{font-size:13px;color:var(--mut)}.cap{margin:2px 0 10px}
+.it{display:block;width:100%;text-align:left;background:none;border:1px solid var(--ln);border-radius:8px;padding:10px;margin-bottom:8px;color:inherit;font:inherit;cursor:pointer}
+.it[aria-current="true"]{border-color:var(--pri);background:var(--pb)}
+.bd{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;margin:4px 4px 0 0}
+.tag{font-size:12px;padding:2px 10px;border-radius:999px;background:var(--pb);color:var(--pri)}
+.ok{background:var(--ob);color:var(--ok)}.wn{background:var(--wb);color:var(--wn)}.st{background:var(--sb);color:var(--st)}.pr{background:var(--pb);color:var(--pri)}
+.qt{margin:12px 0;padding:10px 14px;border-left:4px solid var(--pri);background:var(--pb);border-radius:0 8px 8px 0;font:16px/1.5 Georgia,"Times New Roman",serif}
+.dr{font:17px/1.7 Georgia,"Times New Roman",serif}
+.sn{background:none;border:0;border-bottom:2px solid var(--pri);color:inherit;font:inherit;padding:0 2px;cursor:pointer}
+.sn[aria-pressed="true"]{background:var(--pb)}
+.gap{border:1px dashed var(--wn);background:var(--wb);color:var(--wn);padding:10px 12px;border-radius:8px;margin-top:10px}
+.gap.stp{border-color:var(--st);background:var(--sb);color:var(--st)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.b{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);color:var(--ink);cursor:pointer}
+.b.p{background:var(--pri);border-color:var(--pri);color:var(--onp)}
+.b[aria-pressed="true"]{background:var(--pb);border-color:var(--pri)}
+.b:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.tabs{display:flex;gap:4px;margin-bottom:12px}.tabs .b{flex:1;padding:6px 4px;font-size:13px}
+.ts{margin:0;padding:0}.ts li{list-style:none;padding-left:22px;margin:8px 0;position:relative}
+.ts li::before{content:"";position:absolute;left:0;top:6px;width:10px;height:10px;border-radius:50%;background:var(--ok)}
+.ts li.hold::before{background:var(--wn)}.ts li.stop::before{background:var(--st)}
+.ck{list-style:none;padding:0;margin:0}.ck li{margin:8px 0}
+.hx{list-style:none;margin:0;padding:0}.hx li{display:flex;gap:12px;padding:6px 0;border-top:1px solid var(--ln);font-size:14px}.hx b{min-width:130px;font-weight:600}.hx .mut{min-width:92px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style></head><body>
+<header><h1>Medical inquiry workbench</h1><span class="tag">Prototype with synthetic data</span><span class="tag">ZX-101 is a fictional product</span></header>
+<main>
+<nav class="pn" aria-label="Inquiry queue"><h2>Inquiries</h2><p class="cap">In production: channel adapters and an event bus feed this queue. Pick a case to review.</p><div id="q"></div></nav>
+<section class="pn" id="c" aria-live="polite"></section>
+<aside class="pn"><div class="tabs" role="tablist" id="tb"></div><div id="sd"></div></aside>
+</main>
+<div class="toast" id="t" role="status"></div>
+<script>
+const PI="ZX-101 prescribing information",DE="Germany, German";
+const M=(t,d,v,sc,p)=>({t,d,v,sc,p,st:"Approved and effective today",k:"ok"});
+const SAFE=["Agent cannot send; a reviewer approves","ok"];
+const K=[
+{id:"ren",n:"Dosing in severe renal impairment",ch:"Portal chatbot",who:"Pharmacist",co:"Germany",k:"ok",
+q:"What starting dose do you recommend for a patient with severe renal impairment?",
+cl:[M("For adults with severe renal impairment, the approved starting dose of ZX-101 is 10 mg once daily.",PI,"4.0",DE,"In severe renal impairment, the recommended starting dose is 10 mg once daily."),
+M("Do not increase the dose until renal function has been reassessed.",PI,"4.0",DE,"Do not exceed 10 mg daily until renal function is reassessed."),
+M("The full approved prescribing information is attached.","Standard reply letter template","2.1",DE,"Standard closing: refer to the approved prescribing information.")],
+tr:["ok|Received from the portal chatbot, country Germany, language German.","ok|Classified as a dosing question. No safety or off-label signal.","ok|Retrieved 3 passages from approved content. Status checked: all approved today.","ok|Drafted 3 sentences, each linked to a passage.","ok|Claim verifier: 3 of 3 sentences supported by their passages.","hold|Waiting for the reviewer. Nothing is sent without approval."],
+ck:[["Every sentence cites an approved passage","ok"],["Sources are approved and effective today","ok"],["Country scope matches Germany","ok"],["No safety or off-label signal","ok"],SAFE]},
+{id:"par",n:"Storage during a long trip",ch:"Contact centre",who:"Nurse",co:"Germany",k:"par",
+q:"Can ZX-101 stay in a hot car during a two-day trip?",
+cl:[M("Store ZX-101 tablets below 25 °C in the original package.",PI,"4.0",DE,"Store below 25 °C. Keep in the original package.")],
+gap:"Stability during extended travel above 25 °C is not covered by approved content, so it was not drafted. Escalate that part to Medical Information.",
+tr:["ok|Received from the contact centre, country Germany.","ok|Classified as a storage question. No safety or off-label signal.","ok|Found approved content for storage. Found none for extended travel above 25 °C.","hold|Drafted the supported sentence only. The gap was flagged, not filled.","hold|Waiting for the reviewer to send the supported part and route the rest."],
+ck:[["Drafted sentences cite approved passages","ok"],["Unsupported content held back, not invented","wn"],["Sources are approved today","ok"],SAFE]},
+{id:"inv",n:"Source withdrawn after drafting",ch:"Email",who:"Physician",co:"Germany",k:"inv",
+q:"Is ZX-101 appropriate for patients under 18?",
+cl:[{t:"ZX-101 is not established for use in patients under 18.",d:PI,v:"3.2",sc:DE,p:"Use in patients under 18 is not established.",st:"Superseded by version 4.0 at 09:12",k:"st"}],
+tr:["ok|Drafted at 09:05 from prescribing information version 3.2 and queued for review.","stop|09:12: version 4.0 was approved and 3.2 was superseded. The draft was invalidated automatically.","hold|Sending is blocked until the draft is regenerated from version 4.0."],
+ck:[["Every sentence cites an approved passage","ok"],["Sources are approved and effective today","st"],["Sending is blocked until regenerated","st"]]},
+{id:"ae",n:"Possible adverse event",ch:"Contact centre",who:"Physician",co:"Germany",k:"ae",
+q:"My patient developed a rash and jaundice after starting ZX-101. Is this expected?",
+sp:{h:"Possible adverse event. No reply was drafted.",b:"The agents detected a possible safety report and stopped. They did not interpret it or answer. The case went to the safety team with the full inquiry text.",a:"Confirm the safety team received it"},
+tr:["ok|Received from the contact centre, country Germany.","stop|Safety classifier: possible adverse event (rash and jaundice after starting treatment).","stop|Policy layer: drafting and replying are blocked for this case.","ok|Case copied to the safety intake queue with the full inquiry text.","hold|Waiting for the reviewer to confirm the hand-off."],
+ck:[["Safety signal detected","st"],["No reply drafted for a safety signal","ok"],["Handed to the safety team","ok"],["Agents do not interpret or advise","ok"]]},
+{id:"off",n:"Request outside approved use",ch:"Email",who:"Specialist",co:"France",k:"off",
+q:"Do you have data on using ZX-101 for migraine prevention?",
+sp:{h:"Outside approved use. No reply was drafted.",b:"Unsolicited requests about unapproved uses are not answered in this channel. The case went to Medical Information for a non-promotional response, and the reason is logged.",a:"Confirm the routing"},
+tr:["ok|Received by email, country France.","ok|Matched against approved indications: no match for migraine prevention.","stop|Policy layer: unsolicited off-label requests are not answered in this channel.","ok|Routed to Medical Information. Reason logged.","hold|Waiting for the reviewer to confirm the routing."],
+ck:[["Request is within approved use","st"],["No reply drafted in this channel","ok"],["Routed to Medical Information","ok"],["Reason logged for audit","ok"]]},
+{id:"cty",n:"Same question, two countries",ch:"Portal chatbot",who:"Physician",co:"",k:"ok",
+q:"What is the maximum daily dose of ZX-101?",
+cl:{Germany:[M("The approved maximum daily dose of ZX-101 in Germany is 20 mg.",PI,"4.0","Germany, German","Maximale Tagesdosis: 20 mg.")],
+France:[M("The approved maximum daily dose of ZX-101 in France is 15 mg.",PI,"2.3","France, French, translation approved","Dose maximale quotidienne : 15 mg.")]},
+tr:["ok|Received from the portal chatbot. Country taken from the HCP record.","ok|Retrieved the maximum-dose passage for that country only.","ok|Drafted in English; the source passage is shown in its approved language.","hold|Waiting for the reviewer."],
+ck:[["Every sentence cites an approved passage","ok"],["Country scope matches the HCP’s country","ok"],["Sources are approved and effective today","ok"],SAFE]}];
+const HX={ren:[["Rep visit","6 days ago","Discussed ZX-101 starting doses in general"],["Marketing email","3 days ago","Sent the approved dosing summary"],["Portal chatbot","today","Asked this question"]],
+par:[["Marketing email","2 weeks ago","Sent the storage and handling guide"],["Contact centre","today","Asked this question"]],
+inv:[["Webinar","2 weeks ago","Attended the ZX-101 product overview"],["Email","today","Asked this question"]],
+ae:[["Rep visit","10 days ago","Reviewed the safety section of the label"],["Contact centre","today","Reported this case"]],
+off:[["Marketing email","5 days ago","Sent the approved product overview"],["Rep visit","last week","Shared approved information only"],["Email","today","Asked this question"]],
+cty:[["Rep visit","4 days ago","Discussed approved dosing"],["Portal chatbot","today","Asked this question"]]};
+const hx=c=>`<h3>Recent contact across channels</h3><p class="cap">A preview of the unified HCP view. In production: a read model over the interaction ledger, limited by country and consent. Identity matching and consent checks arrive in release two.</p><ul class="hx">${HX[c.id].map(r=>`<li><b>${r[0]}</b><span class="mut">${r[1]}</span><span>${r[2]}</span></li>`).join("")}</ul>`;
+const BD={ok:["Draft ready","pr"],par:["Partly covered","wn"],inv:["Source changed","wn"],ae:["Safety hand-off","st"],off:["Out of scope","st"]};
+const L={ok:"Pass",wn:"Needs a person",st:"Stop"},T={ok:"Done",hold:"Waiting",stop:"Stopped"};
+let cur=0,sel=-1,tab="s",ctry="Germany";const ss={},tx={};
+const $=s=>document.querySelector(s),gc=c=>Array.isArray(c.cl)||!c.cl?c.cl:c.cl[ctry];
+function toast(m){const t=$("#t");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2600)}
+function render(){
+const c=K[cur],cl=gc(c)||[],co=c.id==="cty"?ctry:c.co,fin=ss[c.id];
+$("#q").innerHTML=K.map((x,i)=>{const b=ss[x.id]?["Done: "+ss[x.id],"ok"]:x.fix?["Draft ready","pr"]:BD[x.k];return `<button class="it" data-a="case" data-v="${i}" aria-current="${i===cur}"><b>${x.n}</b><br><span class="mut">${x.ch}, ${x.id==="cty"?"Germany or France":x.co}</span><br><span class="bd ${b[1]}">${b[0]}</span></button>`}).join("");
+let h=`<h2>${c.n}</h2><p class="cap">In production: a case service and a workflow with human approval steps.</p><span class="bd pr">${c.ch}</span><span class="bd pr">${c.who}</span><span class="bd pr">${co}</span>${fin?`<span class="bd ok">${fin}</span>`:""}<blockquote class="qt">${c.q}</blockquote>`;
+if(c.id==="cty")h+=`<div class="bar" role="group" aria-label="Country">${["Germany","France"].map(x=>`<button class="b" data-a="ctry" data-v="${x}" aria-pressed="${x===ctry}">${x}</button>`).join("")}</div>`;
+h+=hx(c);
+if(c.sp){h+=`<div class="gap stp"><b>${c.sp.h}</b><p>${c.sp.b}</p></div><p class="cap">In production: a deterministic policy layer and classifier rules, outside the model, decide this. The agent cannot override them.</p><div class="bar"><button class="b p" data-a="ack" ${fin?"disabled":""}>${c.sp.a}</button></div>`}
+else{const blk=c.k==="inv"&&!c.fix,dis=fin||blk?"disabled":"";
+h+=`<h3>Draft reply</h3><p class="cap">In production: the drafting agent works only from the approved-content registry. Select a sentence to see its source.</p>`;
+if(blk)h+=`<div class="gap stp"><b>Source changed after drafting.</b> Version 3.2 was superseded by 4.0 at 09:12, so this draft cannot be sent. Version 3.2 said “Use in patients under 18 is not established.” Version 4.0 says “ZX-101 is not recommended in patients under 18.”</div>`;
+h+=`<div class="dr">${cl.map((x,i)=>`<button class="sn" data-a="claim" data-v="${i}" aria-pressed="${i===sel}">${x.t}</button>`).join(" ")}</div>`;
+if(c.gap)h+=`<div class="gap"><b>Not drafted.</b> ${c.gap}</div>`;
+h+=`<div class="bar">${blk?`<button class="b p" data-a="fix">Regenerate from version 4.0</button>`:""}<button class="b p" data-a="ok" ${dis}>${c.k==="par"?"Approve the supported part and send":"Approve and send"}</button><button class="b" data-a="edit" ${dis}>Edit wording</button><button class="b" data-a="esc" ${dis}>Escalate to Medical Information</button></div>`}
+$("#c").innerHTML=h;
+$("#tb").innerHTML=[["s","Source"],["t","Agent trace"],["w","Why it is safe"]].map(([k,n])=>`<button class="b" role="tab" data-a="tab" data-v="${k}" aria-selected="${k===tab}" aria-pressed="${k===tab}">${n}</button>`).join("");
+let s="";
+if(tab==="s"){s=`<p class="cap">In production: the registry returns version, status and country scope for every passage.</p>`;
+if(c.sp)s+=`<p>No source was used. The agents did not draft a reply for this case.</p>`;
+else if(sel>=0&&cl[sel]){const x=cl[sel];s+=`<h3>${x.d}</h3><span class="bd ${x.k}">${x.st}</span><p class="mut">Version ${x.v}, ${x.sc}</p><p class="cap">Approved passage</p><blockquote class="qt">${x.p}</blockquote>`}
+else s+=`<p>Select a sentence in the draft to see the approved passage behind it.</p>`}
+if(tab==="t")s=`<p class="cap">In production: durable step records in an append-only audit store.</p><ol class="ts">${[...c.tr,...(tx[c.id]||[])].map(r=>{const[k,t]=r.split("|");return `<li class="${k}"><b>${T[k]}.</b> ${t}</li>`}).join("")}</ol>`;
+if(tab==="w"){const ck=c.fix?[["Every sentence cites an approved passage","ok"],["Sources are approved and effective today","ok"],SAFE]:c.ck;
+s=`<p class="cap">In production: reporting over the audit store.</p><ul class="ck">${ck.map(([a,k])=>`<li><span class="bd ${k}">${L[k]}</span> ${a}</li>`).join("")}</ul><h3>Where a person stays in control</h3><ul><li>A reviewer approves every outbound reply.</li><li>Safety and off-label content is handed off, never drafted.</li><li>Approval status is rechecked at the moment of sending.</li></ul><div class="bar"><button class="b" data-a="exp">Export evidence pack</button></div>`}
+$("#sd").innerHTML=s}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,v=b.dataset.v,c=K[cur];
+const log=(r)=>(tx[c.id]=tx[c.id]||[]).push(r);
+if(a==="case"){cur=+v;sel=-1;tab="s"}
+else if(a==="claim"){sel=+v;tab="s"}
+else if(a==="tab")tab=v;
+else if(a==="ctry"){ctry=v;sel=-1}
+else if(a==="ok"){ss[c.id]="sent after approval";log("ok|Reviewer approved. Approval status rechecked at send time: still approved. Reply sent.");tab="t";toast("Approved and sent. This is a prototype, so nothing was actually sent.")}
+else if(a==="edit"){log("ok|Reviewer edited the wording. Claim verifier re-ran: every sentence still supported.");tab="t";toast("Edits are rechecked against the sources before sending.")}
+else if(a==="esc"){ss[c.id]="escalated";log("hold|Reviewer escalated the case to Medical Information with the full trace attached.");tab="t";toast("Escalated with the trace attached.")}
+else if(a==="ack"){ss[c.id]="hand-off confirmed";log("ok|Reviewer confirmed the hand-off. Case closed for this team.");tab="t";toast("Hand-off confirmed and logged.")}
+else if(a==="fix"){c.fix=true;c.cl=[M("ZX-101 is not recommended in patients under 18.",PI,"4.0",DE,"ZX-101 is not recommended in patients under 18.")];log("ok|Draft regenerated from version 4.0. Claim verifier: 1 of 1 sentence supported.");sel=0;toast("Regenerated from the current approved version.")}
+else if(a==="exp")toast("Evidence pack ready: question, sources, trace and decisions (synthetic).");
+render();const n=document.querySelector(`[data-a="${a}"][data-v="${v}"]`)||document.querySelector(`[data-a="${a}"]`);if(n&&a!=="ok")n.focus()});
+render();
+</script></body></html>
